@@ -2,6 +2,8 @@
 
 import os
 import unittest
+import pytest
+import allure
 from envparse import env
 from selenium import webdriver
 from selenium_stealth import stealth
@@ -35,19 +37,23 @@ stealth(WEBDRIVER,
 
 
 class MailRuTest(unittest.TestCase):
+
     def setUp(self):
         self.driver = WEBDRIVER
         self.page = MailRu(self.driver)
 
     def test_Mail(self):
-        self.load_site(MAILRU_LOGIN_LINK)
-        self.login(MAILRU_USERNAME, MAILRU_PASSWORD)
-        emailsCount = self.findAndCountEmails(NAME_FROM)
+        with allure.step("Загрузка сайта"):
+            self.load_site(MAILRU_LOGIN_LINK)
+        with allure.step("Логин"):
+            self.login(MAILRU_USERNAME, MAILRU_PASSWORD)
+        with allure.step("Счёт писем"):
+            emailsCount = self.findAndCountEmails(NAME_FROM)
 
         body = "От вас пришло писем - {}".format(emailsCount)
         subject = "Тестовое задание {}".format(STUDENT_NAME)
-
-        self.sendEmail(NAME_FROM, body, subject)
+        with allure.step("Отправка письма"):
+            self.sendEmail(NAME_FROM, body, subject)
 
     def load_site(self, url: str):
         titleLogin = self.page.goToUrl(url)
