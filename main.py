@@ -2,7 +2,6 @@
 
 import os
 import unittest
-import pytest
 import allure
 from envparse import env
 from selenium import webdriver
@@ -22,24 +21,28 @@ options = webdriver.ChromeOptions()
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option('useAutomationExtension', False)
 
-WEBDRIVER = webdriver.Chrome(
-    options=options,
-    executable_path="/usr/bin/chromedriver")
+# WEBDRIVER_LOCAL = webdriver.Chrome(
+#     options=options,
+#     executable_path="/usr/bin/chromedriver")
 
-stealth(WEBDRIVER,
-        languages=["ru-RU", "ru"],
-        vendor="Google Inc.",
-        platform="Win32",
-        webgl_vendor="Intel Inc.",
-        renderer="Intel Iris OpenGL Engine",
-        fix_hairline=True,
-        )
+# stealth(WEBDRIVER_LOCAL,
+#         languages=["ru-RU", "ru"],
+#         vendor="Google Inc.",
+#         platform="Win32",
+#         webgl_vendor="Intel Inc.",
+#         renderer="Intel Iris OpenGL Engine",
+#         fix_hairline=True,
+#         )
 
+desiredCapabilities = {"browserName": "chrome"}
+
+WEBDRIVER_REMOTE = webdriver.Remote(desired_capabilities=desiredCapabilities)
 
 class MailRuTest(unittest.TestCase):
 
     def setUp(self):
-        self.driver = WEBDRIVER
+        self.driver = WEBDRIVER_REMOTE
+        self.driver.maximize_window()
         self.page = MailRu(self.driver)
 
     def test_Mail(self):

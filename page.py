@@ -42,7 +42,7 @@ class BasePage(object):
                 element.send_keys(key)
                 sleep(random.uniform(0.02, 0.1))
         if returnKey:
-            sleep(random.uniform(0.5, 0.1))
+            sleep(random.uniform(0.5, 0.7))
             element.send_keys(Keys.RETURN)
         sleep(random.uniform(2.0, 3.0))
         return element
@@ -66,7 +66,7 @@ class MailRu(BasePage):
             returnKey=True,
             stringToType=MailRuPassword)
 
-        sleep(random.uniform(3.0, 5.0))
+        sleep(random.uniform(5.0, 7.0))
         title = self.driver.title
         assert isinstance(title, str)
         return title

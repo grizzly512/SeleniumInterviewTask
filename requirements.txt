@@ -1,0 +1,15 @@
+allure-pytest==2.8.34
+allure-python-commons==2.8.34
+attrs==20.3.0
+envparse==0.2.0
+iniconfig==1.1.1
+packaging==20.9
+pluggy==0.13.1
+py==1.10.0
+pyparsing==2.4.7
+pytest==6.2.2
+selenium==3.141.0
+selenium-stealth==1.0.6
+six==1.15.0
+toml==0.10.2
+urllib3==1.26.3
