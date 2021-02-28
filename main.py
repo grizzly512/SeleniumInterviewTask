@@ -127,7 +127,7 @@ class MailRuTest(unittest.TestCase):
         Отправить письмо
         arguments:
             subject: str, - Тема письма
-            body: str, - Тескт письма
+            body: str, - Текст письма
             toWho: str, - Имя или адрес
         """
         result = self.page.sendEmail(nameoOrAdress=toWho,
