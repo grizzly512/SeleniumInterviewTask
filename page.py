@@ -2,11 +2,10 @@
 import random
 from time import sleep
 
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.remote.webelement import WebElement
+from selenium.common.exceptions import NoSuchElementException
 from element import BasePageElement
 from locators import MailRuLoginPageLocators
 from locators import MailRuSearchPageLocators
@@ -25,7 +24,6 @@ class BasePage(object):
         # Предусловия
         assert isinstance(url, str)
         self.driver.get(url)
-        sleep(random.uniform(1.0, 3.0))
         # Постусловия
         title = self.driver.title
         assert isinstance(title, str)
@@ -33,14 +31,17 @@ class BasePage(object):
 
 
 class LoginFormElement(BasePageElement):
+    """Поле для ввода логина"""
     locator = MailRuLoginPageLocators.USER_NAME
 
 
 class PasswordFormElement(BasePageElement):
+    """Поле для ввода пароля"""
     locator = MailRuLoginPageLocators.PASSWD
 
 
 class MailRuLoginPage(BasePage):
+    """Страница логина"""
     loginForm = LoginFormElement()
     passwordForm = PasswordFormElement()
 
@@ -53,12 +54,15 @@ class MailRuLoginPage(BasePage):
         assert isinstance(MailRuPassword, str)
         # Вводим имя пользователя
         self.loginForm = [MailRuUsername, Keys.RETURN]
-        WebDriverWait(self.driver, 100).until(
-            EC.visibility_of_element_located(MailRuLoginPageLocators.PASSWD))
-        # sleep(random.uniform(5.0, 7.0))
         # Вводим пароль
         self.passwordForm = [MailRuPassword, Keys.RETURN]
-        # sleep(random.uniform(10.0, 10.0))
+        try:
+            self.driver.find_element(
+                *MailRuLoginPageLocators.INCORRECT_PASSWORD)
+            raise AssertionError("Логин и пароль не совпадают!")
+        except NoSuchElementException:
+            pass
+        # Ждем, пока загрузится страница
         WebDriverWait(self.driver, 100).until(
             EC.title_contains("Входящие - Почта Mail.ru"))
         # Постусловия
@@ -68,26 +72,31 @@ class MailRuLoginPage(BasePage):
 
 
 class SearchButtonElement(BasePageElement):
+    """Кнопка вызова поля поиска"""
     locator = MailRuSearchPageLocators.SEARCH_BUTTON
 
 
 class SearchFieldElement(BasePageElement):
+    """Поле поиска"""
     locator = MailRuSearchPageLocators.SEARCH_FIELD
 
 
 class MailRuSearchPage(BasePage):
+    """Страница поиска"""
     searchButton = SearchButtonElement()
     searchField = SearchFieldElement()
 
     def findEmailsAndCount(self, nameFrom: str) -> int:
+        """Найти и посчитать эл.письма"""
+        # Предусловия
         assert isinstance(nameFrom, str)
         self.searchButton.click()
-        sleep(random.uniform(1.0, 2.0))
         self.searchField = [nameFrom, Keys.RETURN]
         sleep(random.uniform(3.0, 5.0))
+
         emails = self.driver.find_elements(*MailRuSearchPageLocators.MAILS)
         tags = self.driver.find_elements(*MailRuSearchPageLocators.TAGS)
-
+        # Считаем входящие сообщения
         correctEmailsCount = 0
         i = 0
         for mail in emails:
@@ -102,26 +111,32 @@ class MailRuSearchPage(BasePage):
 
 
 class EmailCreateElement(BasePageElement):
+    """Кнопка Написать сообщение"""
     locator = MailRuCreateEmailLocators.MAIL_CREATE_BUTTON
 
 
 class EmailSubjectElement(BasePageElement):
+    """Поле для ввода темы"""
     locator = MailRuCreateEmailLocators.MAIL_SUBJECT
 
 
 class EmailBodyElement(BasePageElement):
+    """Поле для ввода текста письма"""
     locator = MailRuCreateEmailLocators.MAIL_BODY
 
 
 class EmailSendElement(BasePageElement):
+    """Кнопка отправки сообщения"""
     locator = MailRuCreateEmailLocators.MAIL_SEND_BUTTON
 
 
 class EmailSendedElement(BasePageElement):
+    """Проверка на успех отправки эл. письма"""
     locator = MailRuCreateEmailLocators.MAIL_SENDED
 
 
 class MailRuSendPage(BasePage):
+    """Страница отправки письма"""
     emailCreate = EmailCreateElement()
     emailSubject = EmailSubjectElement()
     emailBody = EmailBodyElement()
@@ -138,19 +153,21 @@ class MailRuSendPage(BasePage):
         assert isinstance(nameoOrAdress, str)
         # Находим кнопку "Написать письмо" и кликаем на нее
         self.emailCreate.click()
-        sleep(random.uniform(5.0, 7.0))
+        WebDriverWait(self.driver, 100).until(
+            EC.visibility_of_element_located(
+                MailRuCreateEmailLocators.MAIL_SUBJECT))
         adressForm = self.driver.switch_to.active_element
         adressForm.clear()
         adressForm.send_keys(nameoOrAdress)
         sleep(random.uniform(0.5, 1.0))
         adressForm.send_keys(Keys.RETURN)
+
         # Ищем поле с темой письма и вбиваем тему письма
         self.emailSubject = subject
         # Ищем поле для ввода текста и вбиваем текст письма
         self.emailBody = textBody
         # Нажимаем кнопку отправить
         self.emailSend.click()
-        sleep(random.uniform(3.0, 5.0))
         # Постусловия
         result = self.emailSended
         assert result is not None

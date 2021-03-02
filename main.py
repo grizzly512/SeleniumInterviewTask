@@ -6,7 +6,9 @@ import allure
 from envparse import env
 from selenium import webdriver
 # from selenium_stealth import stealth
-from page import MailRuLoginPage, MailRuSearchPage, MailRuSendPage
+from page import MailRuLoginPage
+from page import MailRuSearchPage
+from page import MailRuSendPage
 
 # Читаем данные из окружения
 currentDir = os.path.dirname(os.path.abspath(__file__))
@@ -45,13 +47,13 @@ desiredCapabilities = {"browserName": "chrome"}
 WEBDRIVER_REMOTE = webdriver.Remote(desired_capabilities=desiredCapabilities)
 
 
+@allure.feature('Тестовое задание')
+@allure.story('Авторизация, подсчет писем от адресата и отправка сообщения')
 class MailRuTest(unittest.TestCase):
     """Класс тестов с mail.ru"""
 
     def setUp(self):
-        """
-        Настройка тестов
-        """
+        """Настройка тестов"""
         self.driver = WEBDRIVER_REMOTE
         self.driver.implicitly_wait(10)
         self.driver.maximize_window()
@@ -60,9 +62,8 @@ class MailRuTest(unittest.TestCase):
         self.sendPage = MailRuSendPage(self.driver)
 
     def test_Mail(self):
-        """
-        Входной тест с шагами allure
-        """
+        """Входной тест с шагами allure"""
+
         with allure.step("Загрузка сайта"):
             titleLogin = self.loginPage.goToUrl(MAILRU_LOGIN_LINK)
             self.assertEqual(titleLogin, "Авторизация")
@@ -70,7 +71,7 @@ class MailRuTest(unittest.TestCase):
             titleMail = self.loginPage.login(MAILRU_USERNAME,
                                              MAILRU_PASSWORD)
             self.assertRegex(titleMail, "Входящие - Почта Mail.ru")
-        with allure.step("Поиск и счйт писем"):
+        with allure.step("Поиск и счёт писем"):
             countEmails = self.searchPage.findEmailsAndCount(NAME_FROM)
             self.assertGreater(countEmails, 0)
 
