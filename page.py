@@ -22,11 +22,11 @@ class BasePage(object):
     def goToUrl(self, url: str) -> str:
         """Перейти к URL"""
         # Предусловия
-        assert isinstance(url, str)
+        assert isinstance(url, str), "URL должен быть str"
         self.driver.get(url)
         # Постусловия
         title = self.driver.title
-        assert isinstance(title, str)
+        assert isinstance(title, str), "Тайтл должен быть str"
         return title
 
 
@@ -50,8 +50,8 @@ class MailRuLoginPage(BasePage):
               MailRuPassword: str) -> str:
         """Логин на mail.ru"""
         # Предусловия
-        assert isinstance(MailRuUsername, str)
-        assert isinstance(MailRuPassword, str)
+        assert isinstance(MailRuUsername, str), "Логин должен быть str"
+        assert isinstance(MailRuPassword, str), "Пароль должен быть str"
         # Вводим имя пользователя
         self.loginForm = [MailRuUsername, Keys.RETURN]
         # Вводим пароль
@@ -67,7 +67,7 @@ class MailRuLoginPage(BasePage):
             EC.title_contains("Входящие - Почта Mail.ru"))
         # Постусловия
         title = self.driver.title
-        assert isinstance(title, str)
+        assert isinstance(title, str), "Тайтл должен быть str"
         return title
 
 
@@ -89,7 +89,7 @@ class MailRuSearchPage(BasePage):
     def findEmailsAndCount(self, nameFrom: str) -> int:
         """Найти и посчитать эл.письма"""
         # Предусловия
-        assert isinstance(nameFrom, str)
+        assert isinstance(nameFrom, str), "Имя или Адрес должены быть str"
         self.searchButton.click()
         self.searchField = [nameFrom, Keys.RETURN]
         sleep(random.uniform(3.0, 5.0))
@@ -106,7 +106,7 @@ class MailRuSearchPage(BasePage):
                 correctEmailsCount += 1
             i += 1
         # Постусловия
-        assert isinstance(correctEmailsCount, int)
+        assert isinstance(correctEmailsCount, int), "Кол-во должно быть int"
         return correctEmailsCount
 
 
@@ -148,9 +148,9 @@ class MailRuSendPage(BasePage):
                   ) -> bool:
         """Отправить письмо"""
         # Предусловия
-        assert isinstance(subject, str)
-        assert isinstance(textBody, str)
-        assert isinstance(nameoOrAdress, str)
+        assert isinstance(subject, str), "Тема должена быть str"
+        assert isinstance(textBody, str), "Текст письма должен быть str"
+        assert isinstance(nameoOrAdress, str), "Имя или Адрес должены быть str"
         # Находим кнопку "Написать письмо" и кликаем на нее
         self.emailCreate.click()
         WebDriverWait(self.driver, 100).until(
@@ -170,7 +170,7 @@ class MailRuSendPage(BasePage):
         self.emailSend.click()
         # Постусловия
         result = self.emailSended
-        assert result is not None
+        assert result is not None, "Не получено подтверждение об отправке"
         # Если нашли result, то возвращаем True, если нет, то
         # assert все равно не пропустит
         return True
