@@ -6,7 +6,8 @@ import allure
 from envparse import env
 from selenium import webdriver
 # from selenium_stealth import stealth
-from page import MailRu
+from page import MailRuLoginPage, MailRuSearchPage, MailRuSendPage
+
 # Читаем данные из окружения
 currentDir = os.path.dirname(os.path.abspath(__file__))
 env.read_envfile(currentDir + '/.env')
@@ -45,101 +46,43 @@ WEBDRIVER_REMOTE = webdriver.Remote(desired_capabilities=desiredCapabilities)
 
 
 class MailRuTest(unittest.TestCase):
-    """
-    Класс тестов с mail.ru
-    inheritance: unittest.TestCase
-    methods:
-        public:
-            setUp
-            test_Mail
-            load_site
-            login
-            findAndCountEmails
-            sendEmail
-            tearDown
-    """
+    """Класс тестов с mail.ru"""
 
     def setUp(self):
         """
         Настройка тестов
         """
         self.driver = WEBDRIVER_REMOTE
+        self.driver.implicitly_wait(10)
         self.driver.maximize_window()
-        self.page = MailRu(self.driver)
+        self.loginPage = MailRuLoginPage(self.driver)
+        self.searchPage = MailRuSearchPage(self.driver)
+        self.sendPage = MailRuSendPage(self.driver)
 
     def test_Mail(self):
         """
         Входной тест с шагами allure
         """
         with allure.step("Загрузка сайта"):
-            self.load_site(MAILRU_LOGIN_LINK)
+            titleLogin = self.loginPage.goToUrl(MAILRU_LOGIN_LINK)
+            self.assertEqual(titleLogin, "Авторизация")
         with allure.step("Логин"):
-            self.login(MAILRU_USERNAME, MAILRU_PASSWORD)
-        with allure.step("Счёт писем"):
-            emailsCount = self.findAndCountEmails(NAME_FROM)
+            titleMail = self.loginPage.login(MAILRU_USERNAME,
+                                             MAILRU_PASSWORD)
+            self.assertRegex(titleMail, "Входящие - Почта Mail.ru")
+        with allure.step("Поиск и счйт писем"):
+            countEmails = self.searchPage.findEmailsAndCount(NAME_FROM)
+            self.assertGreater(countEmails, 0)
 
-        body = "От вас пришло писем - {}".format(emailsCount)
-        subject = "Тестовое задание {}".format(STUDENT_SNAME)
+        body = f"От вас пришло писем - {countEmails}"
+        subject = f"Тестовое задание {STUDENT_SNAME}"
+
         with allure.step("Отправка письма"):
-            self.sendEmail(NAME_FROM, body, subject)
-
-    def load_site(self, url: str):
-        """
-        Загрузка сайта
-        arguments:
-            url: str - адрес страницы
-        returns:
-            None
-        """
-        # Предусловия в self.page.goToUrl()
-        titleLogin = self.page.goToUrl(url)
-        # Постусловия
-        self.assertEqual(titleLogin, "Авторизация")
-
-    def login(self, userName, passwrd):
-        """
-        Логин на mail.ru
-        arguments:
-            userName: str, - логин mail.ru
-            passwrd: str, - пароль mail.ru
-        """
-        # Предусловия в self.page.login()
-        titleMail = self.page.login(userName, passwrd)
-        # Постусловия
-        self.assertRegex(titleMail, "Входящие - Почта Mail.ru")
-
-    def findAndCountEmails(self, fromWho):
-        """
-        Найти и посчитать входящие электронные письма от адресата
-        arguments:
-            fromWho: str, - имя или адрес
-        returns:
-            countEmails: str - количесто эл. писем
-        """
-        # Предусловия в self.page.findAndCountEmails()
-        countEmails = self.page.findAndCountEmails(fromWho)
-        # Постусловия
-        self.assertGreater(countEmails, 0)
-        return countEmails
-
-    def sendEmail(self, toWho, body, subject):
-        """
-        Отправить письмо
-        arguments:
-            subject: str, - Тема письма
-            body: str, - Текст письма
-            toWho: str, - Имя или адрес
-        """
-        result = self.page.sendEmail(nameoOrAdress=toWho,
-                                     textBody=body,
-                                     subject=subject)
-        # Постусловия
-        self.assertTrue(result)
+            result = self.sendPage.sendEmail(subject, body, NAME_FROM)
+            self.assertTrue(result)
 
     def tearDown(self):
-        """
-        Действия по завершению
-        """
+        """Действия по завершению"""
         self.driver.close()
 
 
